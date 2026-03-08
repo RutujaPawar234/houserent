@@ -1,48 +1,45 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Home, Send, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { LayoutDashboard, Home, Send, Trash2, CircleCheck, CircleX } from 'lucide-react';
 import './Dashboard.css';
-
 const OwnerDashboard = () => {
     const { user } = useAuth();
     const [myProperties, setMyProperties] = useState([]);
     const [requests, setRequests] = useState([]);
-
     const fetchData = async () => {
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        const resProps = await axios.get('http://localhost:5000/api/properties/myproperties', config);
-        const resReqs = await axios.get('http://localhost:5000/api/requests/owner', config);
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const resProps = await axios.get(`${apiUrl}/api/properties/myproperties`, config);
+        const resReqs = await axios.get(`${apiUrl}/api/requests/owner`, config);
         setMyProperties(resProps.data);
         setRequests(resReqs.data);
     };
-
     useEffect(() => {
         if (user) fetchData();
     }, [user]);
-
     const handleStatusUpdate = async (reqId, status) => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.put(`http://localhost:5000/api/requests/${reqId}`, { status }, config);
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            await axios.put(`${apiUrl}/api/requests/${reqId}`, { status }, config);
             fetchData();
         } catch (error) {
             console.error(error);
         }
     };
-
     const handleDeleteProperty = async (propId) => {
         if (window.confirm('Are you sure you want to delete this property?')) {
             try {
                 const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                await axios.delete(`http://localhost:5000/api/properties/${propId}`, config);
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                await axios.delete(`${apiUrl}/api/properties/${propId}`, config);
                 fetchData();
             } catch (error) {
                 console.error(error);
             }
         }
     };
-
     return (
         <div className="container dashboard-page">
             <h1 className="page-title"><LayoutDashboard size={32} /> Owner <span className="gradient-text">Dashboard</span></h1>
@@ -61,7 +58,6 @@ const OwnerDashboard = () => {
                     <p>Pending Requests</p>
                 </div>
             </div>
-
             <div className="dashboard-grid">
                 <section className="dashboard-section">
                     <h3>My Listed Properties</h3>
@@ -82,7 +78,6 @@ const OwnerDashboard = () => {
                         ))}
                     </div>
                 </section>
-
                 <section className="dashboard-section">
                     <h3>Incoming Rental Requests</h3>
                     <div className="dashboard-list">
@@ -100,8 +95,8 @@ const OwnerDashboard = () => {
                                     <span className={`status-badge ${req.status.toLowerCase()}`}>{req.status}</span>
                                     {req.status === 'Pending' && (
                                         <div className="status-actions">
-                                            <button onClick={() => handleStatusUpdate(req._id, 'Approved')} className="btn-icon approve"><CheckCircle size={18} /></button>
-                                            <button onClick={() => handleStatusUpdate(req._id, 'Rejected')} className="btn-icon reject"><XCircle size={18} /></button>
+                                            <button onClick={() => handleStatusUpdate(req._id, 'Approved')} className="btn-icon approve"><CircleCheck size={18} /></button>
+                                            <button onClick={() => handleStatusUpdate(req._id, 'Rejected')} className="btn-icon reject"><CircleX size={18} /></button>
                                         </div>
                                     )}
                                 </div>
@@ -113,5 +108,4 @@ const OwnerDashboard = () => {
         </div>
     );
 };
-
 export default OwnerDashboard;
